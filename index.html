@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>All-in-One Web Calculator — Responsive</title>
+<style>
+  :root{
+    --bg:#f5f8fb;
+    --card:#ffffff;
+    --muted:#6b7280;
+    --text:#0f172a;
+    --accent1:#3b82f6; /* blue */
+    --accent2:#7c3aed; /* purple */
+    --soft-border: rgba(15,23,42,0.06);
+    --glass: rgba(15,23,42,0.03);
+    font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background: linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    padding:18px;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    font-family:inherit;
+  }
+
+  .wrap{width:100%;max-width:1100px;}
+
+  /* Header */
+  header.app-header{border-radius:12px;overflow:hidden;box-shadow: 0 6px 18px rgba(20,30,60,0.06);margin-bottom:12px;}
+  .hero{
+    padding:16px 18px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    background: linear-gradient(90deg, rgba(59,130,246,0.95), rgba(124,58,237,0.95));
+    color:white;
+  }
+  .hero .title{display:flex;gap:12px;align-items:center;}
+  .logo-mark{width:52px;height:52px;border-radius:10px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.06));
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;
+    box-shadow: 0 8px 24px rgba(59,130,246,0.18);
+  }
+  .hero h1{margin:0;font-size:1.1rem;letter-spacing:0.1px}
+  .hero p{margin:0;color:rgba(255,255,255,0.95);font-size:0.88rem}
+
+  /* container */
+  .container{background:transparent;padding:14px;display:flex;flex-direction:column;gap:14px;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+
+  /* Tabs (desktop) */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .tab-btn{
+    background:transparent;border:1px solid transparent;color:var(--muted);
+    padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:600;display:inline-flex;gap:8px;align-items:center;font-size:0.95rem;
+  }
+  .tab-btn.active{
+    color:white;
+    background: linear-gradient(90deg,var(--accent1),var(--accent2));
+    box-shadow: 0 8px 18px rgba(124,58,237,0.08);
+  }
+
+  /* Mobile dropdown */
+  .tab-select{display:none;width:100%;padding:10px;border-radius:8px;border:1px solid var(--soft-border);font-size:1rem;background:white;color:var(--text)}
+
+  /* content layout */
+  .content{display:flex;gap:18px;align-items:flex-start;}
+  .left{flex:1 1 360px}
+  .right{flex:1 1 420px}
+
+  .card{
+    background:var(--card);
+    border-radius:12px;
+    padding:14px;
+    margin-bottom:12px;
+    border:1px solid var(--soft-border);
+    box-shadow: 0 6px 18px rgba(16,24,40,0.04);
+  }
+  .card h2{margin:0 0 8px 0;font-size:1rem}
+  .muted{color:var(--muted);font-size:0.92rem;margin-bottom:10px}
+
+  /* Basic calc */
+  .display{
+    width:100%;
+    padding:12px;border-radius:8px;background:var(--bg);
+    border:1px solid var(--glass);text-align:right;font-size:1.25rem;color:var(--text);
+    margin-bottom:12px;
+  }
+  .keypad{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  button.key{
+    padding:12px;border-radius:10px;border:1px solid var(--soft-border);
+    background:transparent;color:var(--text);font-weight:700;cursor:pointer;
+    box-shadow:none;
+  }
+  button.operator{ background: linear-gradient(90deg, rgba(59,130,246,0.08), rgba(124,58,237,0.06)); color:var(--text); border:1px solid rgba(99,102,241,0.12) }
+  button.action{ background:transparent;color:var(--muted) }
+
+  /* forms */
+  input[type="number"], input[type="text"], select, input[type="date"]{
+    width:100%;padding:10px;border-radius:8px;border:1px solid var(--soft-border);
+    background:transparent;color:var(--text);font-size:1rem;
+  }
+  label{display:block;font-size:0.88rem;margin-bottom:6px;color:var(--muted)}
+  .small{font-size:0.95rem;padding:9px;border-radius:8px;border:1px solid var(--soft-border)}
+  .result{margin-top:10px;padding:12px;border-radius:8px;background:#f8fafc;border:1px solid rgba(15,23,42,0.03);font-weight:700;color:var(--text)}
+  .btn{display:inline-block;padding:9px 12px;border-radius:10px;border:0;cursor:pointer;font-weight:700;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:white}
+  .btn.ghost{background:transparent;border:1px solid var(--soft-border);color:var(--text)}
+
+  /* Land area buttons */
+  .land-save{background: linear-gradient(90deg, #2563eb, #9333ea);color:white;border:none;padding:10px;border-radius:8px;cursor:pointer}
+  .land-clear{background:#ef4444;color:white;border:none;padding:10px;border-radius:8px;cursor:pointer}
+  .land-lang{background:#16a34a;color:white;border:none;padding:10px;border-radius:8px;cursor:pointer}
+
+  .footer{margin-top:6px;text-align:center;color:var(--muted);font-size:0.9rem}
+
+  /* small helper */
+  .note-small{font-size:0.84rem;color:var(--muted)}
+
+  /* Responsive behavior: stack for small screens and show dropdown for tabs */
+  @media (max-width:800px){
+    body{padding:12px}
+    .content{flex-direction:column}
+    .left,.right{min-width:unset}
+    .tabs{display:none}             /* hide desktop tabs */
+    .tab-select{display:block}      /* show mobile dropdown */
+    .hero h1{font-size:1rem}
+    .hero p{display:none}
+  }
+
+  /* Print styling for land area save PDF */
+  @media print {
+    @page { size: A4; margin: 20mm; }
+    body { background: linear-gradient(90deg, rgba(59,130,246,0.95), rgba(124,58,237,0.95)) !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    .tabs, .topbar, .tab-select { display: none !important; }
+    .container { box-shadow: none !important; }
+  }
+
+  /* small tweaks for very small phones */
+  @media (max-width:420px){
+    .logo-mark{width:44px;height:44px;font-size:18px}
+    .hero{padding:12px}
+    .land-save, .land-clear, .land-lang { padding:8px; font-size:14px }
+    .key { padding:10px }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap" role="application" aria-label="All in One Calculator App">
+    <header class="app-header" role="banner">
+      <div class="hero">
+        <div class="title">
+          <div class="logo-mark" aria-hidden="true">A</div>
+          <div>
+            <h1>All-in-One Web Calculator</h1>
+            <p>Multiple handy calculators — clean & light</p>
+          </div>
+        </div>
+        <div class="header-actions" aria-hidden="true">
+          <small style="opacity:0.95">Blue • Purple gradient</small>
+        </div>
+      </div>
+    </header>
+
+    <main class="container" role="main" aria-label="Calculators container">
+      <div class="topbar">
+        <div class="tabs" id="tabsTop" aria-label="Calculator tabs">
+          <button class="tab-btn active" data-tab="basic">🧮 Basic</button>
+          <button class="tab-btn" data-tab="currency">💰 Currency</button>
+          <button class="tab-btn" data-tab="age">📅 Age</button>
+          <button class="tab-btn" data-tab="perc">📊 Percentage</button>
+          <button class="tab-btn" data-tab="emi">🏦 Loan/EMI</button>
+          <button class="tab-btn" data-tab="gst">💼 GST</button>
+          <button class="tab-btn" data-tab="bmi">⚖️ BMI</button>
+          <button class="tab-btn" data-tab="land">🌾 Land Area</button>
+        </div>
+
+        <!-- Mobile dropdown (shown only on small screens) -->
+        <select class="tab-select" id="tabSelect" aria-label="Select calculator (mobile)">
+          <option value="basic">🧮 Basic</option>
+          <option value="currency">💰 Currency</option>
+          <option value="age">📅 Age</option>
+          <option value="perc">📊 Percentage</option>
+          <option value="emi">🏦 Loan/EMI</option>
+          <option value="gst">💼 GST</option>
+          <option value="bmi">⚖️ BMI</option>
+          <option value="land">🌾 Land Area</option>
+        </select>
+
+        <div style="color:var(--muted);font-size:0.9rem">Made by Krishna S</div>
+      </div>
+
+      <div class="content" id="calcContent">
+        <div class="left">
+          <!-- Basic Calculator -->
+          <section class="card" data-panel="basic">
+            <h2>Basic Calculator</h2>
+            <div class="muted">Use buttons or keyboard (Enter = equals)</div>
+            <div id="display" class="display" tabindex="0" aria-live="polite">0</div>
+
+            <div class="keypad" role="group" aria-label="Calculator keypad">
+              <button class="key action" data-action="clear">C</button>
+              <button class="key action" data-action="back">⌫</button>
+              <button class="key action" data-action="percent">%</button>
+              <button class="key operator" data-value="/">÷</button>
+
+              <button class="key" data-value="7">7</button>
+              <button class="key" data-value="8">8</button>
+              <button class="key" data-value="9">9</button>
+              <button class="key operator" data-value="*">×</button>
+
+              <button class="key" data-value="4">4</button>
+              <button class="key" data-value="5">5</button>
+              <button class="key" data-value="6">6</button>
+              <button class="key operator" data-value="-">−</button>
+
+              <button class="key" data-value="1">1</button>
+              <button class="key" data-value="2">2</button>
+              <button class="key" data-value="3">3</button>
+              <button class="key operator" data-value="+">+</button>
+
+              <button class="key" data-value="0" style="grid-column:span 2">0</button>
+              <button class="key" data-value=".">.</button>
+              <button class="key operator" data-action="equals">=</button>
+            </div>
+            <div class="muted note-small" style="margin-top:8px">Tip: keyboard numbers, Backspace, Enter.</div>
+          </section>
+
+          <!-- Currency Counter -->
+          <section class="card" data-panel="currency" style="display:none">
+            <h2>Currency / Money Counter (Indian)</h2>
+            <div class="muted">Enter counts per denomination — total updates.</div>
+            <div style="display:grid;grid-template-columns:1fr 110px 120px;gap:8px;margin-top:12px;">
+              <strong>Denomination</strong><strong style="text-align:right">Count</strong><strong style="text-align:right">Subtotal ₹</strong>
+              <div>₹ 2000</div><input type="number" min="0" step="1" value="0" data-den="2000"><div style="text-align:right" data-sub="2000">0</div>
+              <div>₹ 500</div><input type="number" min="0" step="1" value="0" data-den="500"><div style="text-align:right" data-sub="500">0</div>
+              <div>₹ 200</div><input type="number" min="0" step="1" value="0" data-den="200"><div style="text-align:right" data-sub="200">0</div>
+              <div>₹ 100</div><input type="number" min="0" step="1" value="0" data-den="100"><div style="text-align:right" data-sub="100">0</div>
+              <div>₹ 50</div><input type="number" min="0" step="1" value="0" data-den="50"><div style="text-align:right" data-sub="50">0</div>
+              <div>₹ 20</div><input type="number" min="0" step="1" value="0" data-den="20"><div style="text-align:right" data-sub="20">0</div>
+              <div>₹ 10</div><input type="number" min="0" step="1" value="0" data-den="10"><div style="text-align:right" data-sub="10">0</div>
+              <div>₹ 5</div><input type="number" min="0" step="1" value="0" data-den="5"><div style="text-align:right" data-sub="5">0</div>
+              <div>₹ 2</div><input type="number" min="0" step="1" value="0" data-den="2"><div style="text-align:right" data-sub="2">0</div>
+              <div>₹ 1</div><input type="number" min="0" step="1" value="0" data-den="1"><div style="text-align:right" data-sub="1">0</div>
+            </div>
+            <div class="result" id="currencyTotal">Total: ₹ 0</div>
+          </section>
+
+          <!-- Age Calculator -->
+          <section class="card" data-panel="age" style="display:none">
+            <h2>Age Calculator</h2>
+            <label>Birthdate</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <input type="date" id="birthdate" class="small">
+              <button class="btn" id="calcAge">Calculate Age</button>
+            </div>
+            <div class="result" id="ageResult" style="display:none"></div>
+          </section>
+        </div>
+
+        <div class="right">
+          <!-- Percentage -->
+          <section class="card" data-panel="perc" style="display:none">
+            <h2>Percentage Calculator</h2>
+            <label>Type</label>
+            <select id="percType" class="small">
+              <option value="of">What is X% of Y?</option>
+              <option value="increase">Increase by %</option>
+              <option value="decrease">Decrease by %</option>
+              <option value="percentOf">X is what % of Y?</option>
+            </select>
+            <div style="margin-top:8px">
+              <input type="number" id="p1" placeholder="X (e.g. 20)" class="small" />
+              <div style="height:8px"></div>
+              <input type="number" id="p2" placeholder="Y (e.g. 500)" class="small" />
+              <div style="height:8px"></div>
+              <button class="btn" id="calcPerc">Calculate</button>
+            </div>
+            <div class="result" id="percResult" style="display:none"></div>
+          </section>
+
+          <!-- EMI -->
+          <section class="card" data-panel="emi" style="display:none">
+            <h2>Loan / EMI Calculator</h2>
+            <label>Loan Amount (₹)</label>
+            <input type="number" id="loanAmount" class="small" placeholder="e.g. 500000">
+            <label>Annual Interest Rate (%)</label>
+            <input type="number" id="loanRate" class="small" placeholder="e.g. 7.5" step="0.01">
+            <label>Loan Tenure (years)</label>
+            <input type="number" id="loanYears" class="small" placeholder="e.g. 5" step="1">
+            <div style="height:10px"></div>
+            <button class="btn" id="calcEmi">Calculate EMI</button>
+            <div class="result" id="emiResult" style="display:none"></div>
+          </section>
+
+          <!-- GST -->
+          <section class="card" data-panel="gst" style="display:none">
+            <h2>GST Calculator</h2>
+            <label>Amount (₹)</label>
+            <input type="number" id="gstAmount" class="small" placeholder="Base or total amount">
+            <label>GST Rate (%)</label>
+            <input type="number" id="gstRate" class="small" placeholder="e.g. 18" step="0.01">
+            <label>Mode</label>
+            <select id="gstMode" class="small">
+              <option value="add">Add GST (base → total)</option>
+              <option value="remove">Remove GST (total → base)</option>
+            </select>
+            <div style="height:8px"></div>
+            <button class="btn" id="calcGst">Calculate</button>
+            <div class="result" id="gstResult" style="display:none"></div>
+          </section>
+
+          <!-- BMI -->
+          <section class="card" data-panel="bmi" style="display:none">
+            <h2>BMI Calculator</h2>
+            <label>Weight (kg)</label>
+            <input type="number" id="weight" class="small" placeholder="e.g. 70" step="0.1">
+            <label>Height (cm)</label>
+            <input type="number" id="height" class="small" placeholder="e.g. 175" step="0.1">
+            <div style="height:8px"></div>
+            <button class="btn" id="calcBmi">Calculate BMI</button>
+            <div class="result" id="bmiResult" style="display:none"></div>
+          </section>
+
+          <!-- Land Area Converter -->
+          <section class="card" data-panel="land" style="display:none">
+            <h2 id="landTitle">Land Area Converter</h2>
+            <div class="muted" id="landNote">Convert hectares to common land units (Hindi/English)</div>
+            <label id="landLabel" for="hectare">Enter Area (Hectare):</label>
+            <input type="number" id="hectare" placeholder="Enter hectares" oninput="convertLand()" class="small" step="any" min="0">
+            <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+              <button class="land-save" onclick="window.print()" id="saveBtn">Save as PDF</button>
+              <button class="land-clear" onclick="clearLand()" id="clearBtn">Clear</button>
+              <button class="land-lang" onclick="toggleLandLang()" id="langBtn">हिन्दी</button>
+            </div>
+            <div class="result" id="landResults" style="margin-top:12px"></div>
+            <div class="note-small" style="margin-top:8px">Use Save as PDF to export results (print dialog).</div>
+          </section>
+
+        </div> <!-- end content -->
+      </div>
+
+      <div class="footer">
+        Made by Krishna S • Clean light theme • Blue → Purple header
+      </div>
+    </main>
+  </div>
+
+<script>
+/* Tab control: desktop tabs + mobile dropdown sync */
+(function(){
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('[data-panel]');
+  const select = document.getElementById('tabSelect');
+
+  function showPanel(name){
+    panels.forEach(p=>{
+      p.style.display = (p.getAttribute('data-panel') === name) ? 'block' : 'none';
+    });
+    tabBtns.forEach(b=>{
+      b.classList.toggle('active', b.dataset.tab === name);
+    });
+    if(select) select.value = name;
+    // scroll panel into view (small smooth)
+    const first = document.querySelector('[data-panel="'+name+'"]');
+    if(first) first.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+
+  tabBtns.forEach(b=>{
+    b.addEventListener('click', ()=> showPanel(b.dataset.tab));
+  });
+
+  if(select){
+    select.addEventListener('change', ()=> showPanel(select.value));
+  }
+
+  // initial
+  showPanel('basic');
+})();
+
+/* BASIC CALC */
+(function(){
+  const display = document.getElementById('display');
+  let expr = '';
+
+  function setDisplay(v){ display.textContent = v; }
+
+  function safeEval(s){
+    if(!/^[0-9+\-*/(). %]+$/.test(s)) return 'Error';
+    try{
+      s = s.replace(/([0-9.]+)%/g, '($1/100)');
+      s = s.replace(/×/g,'*').replace(/÷/g,'/');
+      const val = eval(s);
+      if(Number.isFinite(val)) return String(val);
+      return 'Error';
+    }catch(e){ return 'Error' }
+  }
+
+  document.querySelectorAll('.key').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const v = btn.dataset.value;
+      const action = btn.dataset.action;
+      if(action === 'clear'){ expr = ''; setDisplay('0'); }
+      else if(action === 'back'){ expr = expr.slice(0,-1); setDisplay(expr || '0'); }
+      else if(action === 'equals'){ const out = safeEval(expr); expr = (out === 'Error') ? '' : out; setDisplay(out); }
+      else if(action === 'percent'){ expr += '%'; setDisplay(expr); }
+      else if(v !== undefined){ expr += v; setDisplay(expr); }
+    });
+  });
+
+  window.addEventListener('keydown', (e)=>{
+    // ignore typing when not on basic tab? We allow always but it's fine.
+    if(e.key === 'Enter'){ e.preventDefault(); const eq = document.querySelector('[data-action="equals"]'); if(eq) eq.click(); return; }
+    if(e.key === 'Backspace'){ const bk = document.querySelector('[data-action="back"]'); if(bk) bk.click(); return; }
+    if(e.key === 'Escape'){ const cl = document.querySelector('[data-action="clear"]'); if(cl) cl.click(); return; }
+    if(/[\d.+\-*/()%]/.test(e.key)){
+      expr += e.key;
+      setDisplay(expr);
+    }
+  });
+})();
+
+/* CURRENCY COUNTER */
+(function(){
+  const inputs = Array.from(document.querySelectorAll('input[data-den]'));
+  const subEls = {};
+  inputs.forEach(inp=>{
+    subEls[inp.dataset.den] = document.querySelector('[data-sub="'+inp.dataset.den+'"]');
+  });
+  const totalEl = document.getElementById('currencyTotal');
+
+  function update(){
+    let total = 0;
+    inputs.forEach(inp=>{
+      const den = Number(inp.dataset.den);
+      const count = Math.max(0, Math.floor(Number(inp.value) || 0));
+      const sub = den * count;
+      if(subEls[den]) subEls[den].textContent = sub.toLocaleString();
+      total += sub;
+    });
+    if(totalEl) totalEl.textContent = 'Total: ₹ ' + total.toLocaleString();
+  }
+  inputs.forEach(inp=>{ inp.addEventListener('input', update); inp.addEventListener('change', update); });
+  update();
+})();
+
+/* AGE CALCULATOR */
+(function(){
+  const btn = document.getElementById('calcAge');
+  const out = document.getElementById('ageResult');
+  if(btn){
+    btn.addEventListener('click', ()=>{
+      const val = document.getElementById('birthdate').value;
+      if(!val){ out.style.display='block'; out.textContent='Please choose birthdate.'; return; }
+      const bd = new Date(val);
+      const now = new Date();
+      if(bd>now){ out.style.display='block'; out.textContent='Birthdate is in the future.'; return; }
+      let y = now.getFullYear() - bd.getFullYear();
+      let m = now.getMonth() - bd.getMonth();
+      let d = now.getDate() - bd.getDate();
+      if(d < 0){ m -= 1; const prev = new Date(now.getFullYear(), now.getMonth(), 0).getDate(); d += prev; }
+      if(m < 0){ y -= 1; m += 12; }
+      out.style.display='block';
+      out.textContent = `${y} years, ${m} months, ${d} days (as of ${now.toISOString().slice(0,10)})`;
+    });
+  }
+})();
+
+/* PERCENTAGE */
+(function(){
+  const btn = document.getElementById('calcPerc');
+  const out = document.getElementById('percResult');
+  if(btn){
+    btn.addEventListener('click', ()=>{
+      const t = document.getElementById('percType').value;
+      const x = Number(document.getElementById('p1').value);
+      const y = Number(document.getElementById('p2').value);
+      if(isNaN(x) || isNaN(y)){ out.style.display='block'; out.textContent='Enter valid numbers.'; return; }
+      let res = '';
+      if(t === 'of'){ res = `${x}% of ${y} = ${ (x/100)*y }`; }
+      else if(t === 'increase'){ const v = y * (1 + x/100); res = `${y} increased by ${x}% = ${v}`; }
+      else if(t === 'decrease'){ const v = y * (1 - x/100); res = `${y} decreased by ${x}% = ${v}`; }
+      else if(t === 'percentOf'){ const perc = (x / y) * 100; res = `${x} is ${perc}% of ${y}`; }
+      out.style.display='block'; out.textContent = res;
+    });
+  }
+})();
+
+/* EMI */
+(function(){
+  const btn = document.getElementById('calcEmi');
+  const out = document.getElementById('emiResult');
+  if(btn){
+    btn.addEventListener('click', ()=>{
+      const P = Number(document.getElementById('loanAmount').value);
+      const annualR = Number(document.getElementById('loanRate').value);
+      const years = Number(document.getElementById('loanYears').value);
+      if(!P || !annualR || !years){ out.style.display='block'; out.textContent='Enter loan amount, rate and tenure.'; return; }
+      const r = annualR / 1200;
+      const n = years * 12;
+      const pow = Math.pow(1+r, n);
+      const E = (P * r * pow) / (pow - 1);
+      const totalPay = E * n;
+      const totalInterest = totalPay - P;
+      out.style.display='block';
+      out.innerHTML = `Monthly EMI: ₹ ${E.toFixed(2)}<br>Total Payment: ₹ ${totalPay.toFixed(2)}<br>Total Interest: ₹ ${totalInterest.toFixed(2)}`;
+    });
+  }
+})();
+
+/* GST */
+(function(){
+  const btn = document.getElementById('calcGst');
+  const out = document.getElementById('gstResult');
+  if(btn){
+    btn.addEventListener('click', ()=>{
+      const amt = Number(document.getElementById('gstAmount').value);
+      const rate = Number(document.getElementById('gstRate').value);
+      const mode = document.getElementById('gstMode').value;
+      if(isNaN(amt) || isNaN(rate)){ out.style.display='block'; out.textContent='Enter amount and GST rate.'; return; }
+      if(mode === 'add'){
+        const gst = amt * (rate/100);
+        const total = amt + gst;
+        out.style.display='block';
+        out.innerHTML = `Base: ₹ ${amt.toFixed(2)}<br>GST (${rate}%): ₹ ${gst.toFixed(2)}<br>Total: ₹ ${total.toFixed(2)}`;
+      } else {
+        const base = amt / (1 + rate/100);
+        const gst = amt - base;
+        out.style.display='block';
+        out.innerHTML = `Total: ₹ ${amt.toFixed(2)}<br>Base (ex-GST): ₹ ${base.toFixed(2)}<br>GST (${rate}%): ₹ ${gst.toFixed(2)}`;
+      }
+    });
+  }
+})();
+
+/* BMI */
+(function(){
+  const btn = document.getElementById('calcBmi');
+  const out = document.getElementById('bmiResult');
+  if(btn){
+    btn.addEventListener('click', ()=>{
+      const w = Number(document.getElementById('weight').value);
+      const h = Number(document.getElementById('height').value);
+      if(!w || !h){ out.style.display='block'; out.textContent='Enter weight and height.'; return; }
+      const m = h / 100;
+      const bmi = w / (m*m);
+      let cat = '';
+      if(bmi < 18.5) cat = 'Underweight';
+      else if(bmi < 25) cat = 'Normal weight';
+      else if(bmi < 30) cat = 'Overweight';
+      else cat = 'Obesity';
+      out.style.display='block';
+      out.innerHTML = `BMI: ${bmi.toFixed(2)} — ${cat}<br>Range: Under <18.5; 18.5–24.9 normal; 25–29.9 overweight; 30+ obesity.`;
+    });
+  }
+})();
+
+/* LAND AREA CONVERTER (with Hindi-English toggle) */
+(function(){
+  const translations = {
+    en: {
+      title: "Land Area Converter",
+      note: "Convert hectares to common land units (Hindi/English)",
+      label: "Enter Area (Hectare):",
+      save: "Save as PDF",
+      clear: "Clear",
+      lang: "हिन्दी",
+      units: {
+        Acre: "Acre",
+        Bigha: "Bigha",
+        Kattha: "Kattha",
+        Dismil: "Dismil",
+        Sqft: "Square Feet",
+        Dhur: "Dhur"
+      }
+    },
+    hi: {
+      title: "भूमि क्षेत्र परिवर्तक",
+      note: "हेक्टेयर को सामान्य भूमि इकाइयों में बदलें (हिन्दी/अंग्रेजी)",
+      label: "क्षेत्र दर्ज करें (हेक्टेयर):",
+      save: "पीडीएफ में सहेजें",
+      clear: "साफ करें",
+      lang: "English",
+      units: {
+        Acre: "एकड़",
+        Bigha: "बीघा",
+        Kattha: "कट्ठा",
+        Dismil: "डिसमिल",
+        Sqft: "वर्ग फीट",
+        Dhur: "धुर"
+      }
+    }
+  };
+
+  let currentLang = 'en';
+
+  window.toggleLandLang = function(){
+    currentLang = currentLang === 'en' ? 'hi' : 'en';
+    document.getElementById('landTitle').innerText = translations[currentLang].title;
+    document.getElementById('landNote').innerText = translations[currentLang].note;
+    document.getElementById('landLabel').innerText = translations[currentLang].label;
+    document.getElementById('saveBtn').innerText = translations[currentLang].save;
+    document.getElementById('clearBtn').innerText = translations[currentLang].clear;
+    document.getElementById('langBtn').innerText = translations[currentLang].lang;
+    convertLand();
+  };
+
+  window.convertLand = function(){
+    let h = parseFloat(document.getElementById('hectare').value);
+    let res = document.getElementById('landResults');
+    res.innerHTML = "";
+    if (!isNaN(h) && h >= 0){
+      let u = translations[currentLang].units;
+      // conversion factors (approx)
+      res.innerHTML += `<div>${u.Acre}: ${(h * 2.471052).toFixed(4)}</div>`;
+      res.innerHTML += `<div>${u.Bigha}: ${(h * 3.986635).toFixed(4)}</div>`;
+      res.innerHTML += `<div>${u.Kattha}: ${(h * 79.088245).toFixed(4)}</div>`;
+      res.innerHTML += `<div>${u.Dismil}: ${(h * 247.128075).toFixed(4)}</div>`;
+      res.innerHTML += `<div>${u.Sqft}: ${(h * 106739.1505).toFixed(4)}</div>`;
+      res.innerHTML += `<div>${u.Dhur}: ${(h * 29899.7524).toFixed(4)}</div>`;
+    }
+  };
+
+  window.clearLand = function(){
+    const el = document.getElementById('hectare');
+    if(el) el.value = '';
+    const res = document.getElementById('landResults');
+    if(res) res.innerHTML = '';
+  };
+
+  // accessibility: Enter key on hectare input triggers convert
+  const hInput = document.getElementById('hectare');
+  if(hInput){
+    hInput.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter'){ e.preventDefault(); convertLand(); }
+    });
+  }
+})();
+
+/* Ensure tab dropdown/desktop tabs always in sync on load when resized */
+(function(){
+  const select = document.getElementById('tabSelect');
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  // update select label icons if needed (no-op but keeps consistent)
+  window.addEventListener('resize', ()=> {
+    // If mobile view and select visible, keep value
+    if(window.innerWidth <= 800 && select){
+      // keep selected as active tab
+      const active = document.querySelector('.tab-btn.active');
+      if(active) select.value = active.dataset.tab;
+    }
+  });
+})();
+</script>
+</body>
+</html>
