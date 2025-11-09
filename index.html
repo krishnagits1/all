@@ -44,6 +44,7 @@
     gap:12px;
     background: linear-gradient(90deg, rgba(59,130,246,0.95), rgba(124,58,237,0.95));
     color:white;
+    position: relative;
   }
   .hero .title{display:flex;gap:12px;align-items:center;}
   .logo-mark{width:52px;height:52px;border-radius:10px;
@@ -53,6 +54,16 @@
   }
   .hero h1{margin:0;font-size:1.1rem;letter-spacing:0.1px}
   .hero p{margin:0;color:rgba(255,255,255,0.95);font-size:0.88rem}
+  /* optional curved wave bottom */
+  .hero::after{
+    content:"";
+    position:absolute;left:0;right:0;bottom:-1px;height:36px;
+    background:
+      radial-gradient(60px 24px at 10% 0, #fff 60%, transparent 61%) repeat-x;
+    background-size: 140px 36px;
+    opacity:0.9;
+    mix-blend-mode:screen;
+  }
 
   /* container */
   .container{background:transparent;padding:14px;display:flex;flex-direction:column;gap:14px;}
@@ -106,7 +117,7 @@
   button.action{ background:transparent;color:var(--muted) }
 
   /* forms */
-  input[type="number"], input[type="text"], select, input[type="date"]{
+  input[type="number"], input[type="text"], select, input[type="date"], input[type="file"]{
     width:100%;padding:10px;border-radius:8px;border:1px solid var(--soft-border);
     background:transparent;color:var(--text);font-size:1rem;
   }
@@ -120,6 +131,22 @@
   .land-save{background: linear-gradient(90deg, #2563eb, #9333ea);color:white;border:none;padding:10px;border-radius:8px;cursor:pointer}
   .land-clear{background:#ef4444;color:white;border:none;padding:10px;border-radius:8px;cursor:pointer}
   .land-lang{background:#16a34a;color:white;border:none;padding:10px;border-radius:8px;cursor:pointer}
+
+  /* Photo->PDF panel */
+  .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-top:10px}
+  .thumb{
+    border:1px solid var(--soft-border);border-radius:10px;overflow:hidden;background:#fff;
+    display:flex;flex-direction:column;box-shadow:0 4px 10px rgba(16,24,40,0.04)
+  }
+  .thumb .imgwrap{aspect-ratio:1/1;background:#f3f4f6;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .thumb img{width:100%;height:100%;object-fit:cover;transition:transform .2s ease}
+  .thumb .meta{padding:8px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:6px;align-items:center}
+  .thumb .actions{display:flex;gap:6px;padding:8px;border-top:1px solid var(--soft-border)}
+  .chip{display:inline-block;padding:6px 8px;border-radius:8px;border:1px solid var(--soft-border);background:transparent;font-size:12px;color:var(--text)}
+  .iconbtn{border:1px solid var(--soft-border);background:#fff;border-radius:8px;padding:6px 8px;cursor:pointer;font-weight:700}
+  .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px}
+  .bar .group{display:flex;gap:8px;align-items:center}
+  .progress{font-size:12px;color:var(--muted);margin-top:6px}
 
   .footer{margin-top:6px;text-align:center;color:var(--muted);font-size:0.9rem}
 
@@ -182,6 +209,7 @@
           <button class="tab-btn" data-tab="gst">💼 GST</button>
           <button class="tab-btn" data-tab="bmi">⚖️ BMI</button>
           <button class="tab-btn" data-tab="land">🌾 Land Area</button>
+          <button class="tab-btn" data-tab="pdf">🖼️ Photo → PDF</button>
         </div>
 
         <!-- Mobile dropdown (shown only on small screens) -->
@@ -194,6 +222,7 @@
           <option value="gst">💼 GST</option>
           <option value="bmi">⚖️ BMI</option>
           <option value="land">🌾 Land Area</option>
+          <option value="pdf">🖼️ Photo → PDF</option>
         </select>
 
         <div style="color:var(--muted);font-size:0.9rem">Made by Krishna S</div>
@@ -346,14 +375,49 @@
             <div class="note-small" style="margin-top:8px">Use Save as PDF to export results (print dialog).</div>
           </section>
 
-        </div> <!-- end content -->
-      </div>
+          <!-- Photo → PDF -->
+          <section class="card" data-panel="pdf" style="display:none">
+            <h2>🖼️ Photo → PDF (Merge & Compress)</h2>
+            <div class="muted">Upload images, reorder, choose quality & page size, then export a single PDF.</div>
+
+            <label for="pdfFiles">Select Photos (JPG/PNG, multiple):</label>
+            <input type="file" id="pdfFiles" accept="image/*" multiple>
+
+            <div class="bar">
+              <div class="group">
+                <label for="pdfPage">Page</label>
+                <select id="pdfPage" class="small">
+                  <option value="a4">A4</option>
+                  <option value="a5">A5</option>
+                  <option value="auto">Auto (per photo)</option>
+                </select>
+              </div>
+              <div class="group">
+                <label for="pdfQuality">Quality</label>
+                <input type="range" id="pdfQuality" min="0.3" max="0.95" step="0.05" value="0.7">
+                <span class="chip" id="qualityLabel">0.70</span>
+              </div>
+              <div class="group">
+                <button class="btn" id="makePdfBtn">Create PDF</button>
+                <button class="btn ghost" id="clearPdfBtn">Clear</button>
+              </div>
+            </div>
+
+            <div class="progress" id="pdfProgress"></div>
+            <div class="thumbs" id="thumbs"></div>
+          </section>
+
+        </div> <!-- end right -->
+      </div> <!-- end content -->
 
       <div class="footer">
         Made by Krishna S • Clean light theme • Blue → Purple header
       </div>
     </main>
   </div>
+
+<!-- jsPDF CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 <script>
 /* Tab control: desktop tabs + mobile dropdown sync */
@@ -375,13 +439,8 @@
     if(first) first.scrollIntoView({behavior:'smooth', block:'center'});
   }
 
-  tabBtns.forEach(b=>{
-    b.addEventListener('click', ()=> showPanel(b.dataset.tab));
-  });
-
-  if(select){
-    select.addEventListener('change', ()=> showPanel(select.value));
-  }
+  tabBtns.forEach(b=> b.addEventListener('click', ()=> showPanel(b.dataset.tab)));
+  if(select) select.addEventListener('change', ()=> showPanel(select.value));
 
   // initial
   showPanel('basic');
@@ -393,7 +452,6 @@
   let expr = '';
 
   function setDisplay(v){ display.textContent = v; }
-
   function safeEval(s){
     if(!/^[0-9+\-*/(). %]+$/.test(s)) return 'Error';
     try{
@@ -418,14 +476,10 @@
   });
 
   window.addEventListener('keydown', (e)=>{
-    // ignore typing when not on basic tab? We allow always but it's fine.
     if(e.key === 'Enter'){ e.preventDefault(); const eq = document.querySelector('[data-action="equals"]'); if(eq) eq.click(); return; }
     if(e.key === 'Backspace'){ const bk = document.querySelector('[data-action="back"]'); if(bk) bk.click(); return; }
     if(e.key === 'Escape'){ const cl = document.querySelector('[data-action="clear"]'); if(cl) cl.click(); return; }
-    if(/[\d.+\-*/()%]/.test(e.key)){
-      expr += e.key;
-      setDisplay(expr);
-    }
+    if(/[\d.+\-*/()%]/.test(e.key)){ expr += e.key; setDisplay(expr); }
   });
 })();
 
@@ -433,9 +487,7 @@
 (function(){
   const inputs = Array.from(document.querySelectorAll('input[data-den]'));
   const subEls = {};
-  inputs.forEach(inp=>{
-    subEls[inp.dataset.den] = document.querySelector('[data-sub="'+inp.dataset.den+'"]');
-  });
+  inputs.forEach(inp=>{ subEls[inp.dataset.den] = document.querySelector('[data-sub="'+inp.dataset.den+'"]'); });
   const totalEl = document.getElementById('currencyTotal');
 
   function update(){
@@ -646,19 +698,243 @@
   }
 })();
 
-/* Ensure tab dropdown/desktop tabs always in sync on load when resized */
+/* PHOTO → PDF (merge + compress) */
 (function(){
-  const select = document.getElementById('tabSelect');
-  const tabBtns = document.querySelectorAll('.tab-btn');
-  // update select label icons if needed (no-op but keeps consistent)
-  window.addEventListener('resize', ()=> {
-    // If mobile view and select visible, keep value
-    if(window.innerWidth <= 800 && select){
-      // keep selected as active tab
-      const active = document.querySelector('.tab-btn.active');
-      if(active) select.value = active.dataset.tab;
+  const { jsPDF } = window.jspdf || {};
+  const fileInput = document.getElementById('pdfFiles');
+  const thumbs = document.getElementById('thumbs');
+  const makeBtn = document.getElementById('makePdfBtn');
+  const clearBtn = document.getElementById('clearPdfBtn');
+  const pageSel = document.getElementById('pdfPage');
+  const qRange = document.getElementById('pdfQuality');
+  const qLabel = document.getElementById('qualityLabel');
+  const progress = document.getElementById('pdfProgress');
+
+  let items = []; // {name, dataURL, rotate:0|90|180|270}
+
+  qRange?.addEventListener('input', ()=>{ qLabel.textContent = Number(qRange.value).toFixed(2); });
+
+  fileInput?.addEventListener('change', async (e)=>{
+    const files = Array.from(e.target.files || []);
+    for(const f of files){
+      if(!f.type.startsWith('image/')) continue;
+      const dataURL = await readAsDataURL(f);
+      items.push({ name: f.name, dataURL, rotate: 0 });
     }
+    renderThumbs();
   });
+
+  clearBtn?.addEventListener('click', ()=>{
+    items = [];
+    fileInput.value = '';
+    progress.textContent = '';
+    renderThumbs();
+  });
+
+  makeBtn?.addEventListener('click', async ()=>{
+    if(!jsPDF){ alert('jsPDF failed to load. Check your internet connection.'); return; }
+    if(items.length === 0){ alert('Please upload at least one image.'); return; }
+
+    makeBtn.disabled = true;
+    progress.textContent = 'Preparing PDF...';
+
+    const quality = clamp(parseFloat(qRange.value) || 0.7, 0.3, 0.95);
+    const formatMap = { a4: [210, 297], a5: [148, 210] }; // mm
+    const baseFormatKey = pageSel.value; // 'a4' | 'a5' | 'auto'
+
+    let firstOrient = 'p';
+    let firstFormat = 'a4';
+    if(baseFormatKey !== 'auto'){
+      firstFormat = baseFormatKey;
+    } else {
+      // choose by first image aspect
+      const as = await getImageAspect(items[0].dataURL, items[0].rotate);
+      firstOrient = (as > 1) ? 'l' : 'p';
+      firstFormat = 'a4';
+    }
+
+    const doc = new jsPDF({ unit:'mm', format: firstFormat, orientation: firstOrient, compress: true });
+
+    for(let i=0;i<items.length;i++){
+      const it = items[i];
+      const aspect = await getImageAspect(it.dataURL, it.rotate);
+      let orientation = 'p';
+      let pageSize = 'a4';
+      if(baseFormatKey === 'auto'){
+        orientation = (aspect > 1) ? 'l' : 'p';
+        pageSize = 'a4';
+      } else {
+        pageSize = baseFormatKey; // 'a4' or 'a5'
+        // if landscape image and fixed page, still choose orientation to better fit
+        orientation = (aspect > 1) ? 'l' : 'p';
+      }
+
+      if(i === 0){
+        // first page already exists, but if orientation/format differs, reset size
+        if(i === 0){
+          doc.setPage(1);
+          // jsPDF 2.x cannot change page format after creation; if mismatch, we add a temp page and delete?
+          // Easiest: if baseFormat is auto and orientation differs from created, just use addPage then delete first blank.
+        }
+      } else {
+        doc.addPage(pageSize, orientation);
+      }
+
+      const sizeMM = (pageSize === 'a5') ? {w:148, h:210} : {w:210, h:297};
+      const margin = 10; // mm
+      const boxW = sizeMM.w - margin*2;
+      const boxH = sizeMM.h - margin*2;
+
+      // Prepare compressed JPEG dataURL fitting inside the page box at ~150dpi
+      const jpegData = await makeFittedJPEG(it.dataURL, it.rotate, boxW, boxH, 150, quality);
+
+      // Compute display size (keep aspect)
+      const imgAspect = await getImageAspect(jpegData, 0); // already rotated inside
+      let drawW = boxW, drawH = drawW / imgAspect;
+      if(drawH > boxH){ drawH = boxH; drawW = drawH * imgAspect; }
+      const x = (sizeMM.w - drawW)/2;
+      const y = (sizeMM.h - drawH)/2;
+
+      progress.textContent = `Adding ${i+1}/${items.length}...`;
+      doc.addImage(jpegData, 'JPEG', x, y, drawW, drawH, undefined, 'FAST');
+    }
+
+    progress.textContent = 'Finalizing...';
+    doc.save('photos.pdf');
+    progress.textContent = 'Done ✅';
+    makeBtn.disabled = false;
+  });
+
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+  function readAsDataURL(file){
+    return new Promise((resolve,reject)=>{
+      const r = new FileReader();
+      r.onload = ()=> resolve(r.result);
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+  }
+
+  function loadImage(src){
+    return new Promise((resolve,reject)=>{
+      const img = new Image();
+      img.onload = ()=> resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+  }
+
+  async function getImageAspect(src, rotate=0){
+    const img = await loadImage(src);
+    const is90 = (rotate % 180 !== 0);
+    const w = is90 ? img.height : img.width;
+    const h = is90 ? img.width  : img.height;
+    return w / h;
+  }
+
+  // Build a compressed JPEG that fits within given box (mm) at target dpi, applying rotation degrees
+  async function makeFittedJPEG(src, rotate, boxWmm, boxHmm, dpi, quality){
+    const img = await loadImage(src);
+    // Convert mm box to px at dpi
+    const boxWpx = Math.round(boxWmm * dpi / 25.4);
+    const boxHpx = Math.round(boxHmm * dpi / 25.4);
+
+    const is90 = (rotate % 180 !== 0);
+    const srcW = img.width;
+    const srcH = img.height;
+    const rotW = is90 ? srcH : srcW;
+    const rotH = is90 ? srcW : srcH;
+    const aspect = rotW / rotH;
+
+    let targetW = boxWpx, targetH = Math.round(targetW / aspect);
+    if(targetH > boxHpx){ targetH = boxHpx; targetW = Math.round(targetH * aspect); }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = targetW;
+    canvas.height = targetH;
+    const ctx = canvas.getContext('2d');
+
+    // draw with rotation onto target canvas
+    ctx.save();
+    if(is90){
+      // draw rotated source into destination keeping target size
+      // Strategy: drawImage with transforms
+      // For 90 or 270 deg, we rotate canvas then draw the image scaled to fit
+      canvas.width = targetW; canvas.height = targetH;
+      ctx.translate(targetW/2, targetH/2);
+      ctx.rotate((rotate*Math.PI)/180);
+      const scale = Math.min(targetW / srcH, targetH / srcW);
+      const drawW = srcW * scale;
+      const drawH = srcH * scale;
+      ctx.drawImage(img, -drawW/2, -drawH/2, drawW, drawH);
+    } else if(rotate % 360 !== 0){
+      ctx.translate(targetW/2, targetH/2);
+      ctx.rotate((rotate*Math.PI)/180);
+      const scale = Math.min(targetW / srcW, targetH / srcH);
+      const drawW = srcW * scale;
+      const drawH = srcH * scale;
+      ctx.drawImage(img, -drawW/2, -drawH/2, drawW, drawH);
+    } else {
+      // no rotation
+      const scale = Math.min(targetW / srcW, targetH / srcH);
+      const drawW = srcW * scale;
+      const drawH = srcH * scale;
+      const dx = (targetW - drawW)/2;
+      const dy = (targetH - drawH)/2;
+      ctx.drawImage(img, dx, dy, drawW, drawH);
+    }
+    ctx.restore();
+
+    return canvas.toDataURL('image/jpeg', quality);
+  }
+
+  function renderThumbs(){
+    thumbs.innerHTML = '';
+    items.forEach((it, idx)=>{
+      const card = document.createElement('div'); card.className='thumb';
+      const imgwrap = document.createElement('div'); imgwrap.className='imgwrap';
+      const img = document.createElement('img'); img.src = it.dataURL; img.alt = it.name;
+      img.style.transform = `rotate(${it.rotate||0}deg)`;
+      imgwrap.appendChild(img);
+
+      const meta = document.createElement('div'); meta.className='meta';
+      meta.innerHTML = `<span class="chip">${idx+1}</span><span title="${it.name}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:85px">${it.name}</span>`;
+
+      const actions = document.createElement('div'); actions.className='actions';
+      const up = btn('↑', ()=> move(idx, -1));
+      const down = btn('↓', ()=> move(idx, +1));
+      const rot = btn('⤾', ()=> rotate(idx));
+      const del = btn('✕', ()=> remove(idx));
+      actions.append(up, down, rot, del);
+
+      card.append(imgwrap, meta, actions);
+      thumbs.appendChild(card);
+    });
+  }
+
+  function btn(text, onClick){
+    const b = document.createElement('button');
+    b.className='iconbtn';
+    b.type='button';
+    b.textContent=text;
+    b.addEventListener('click', onClick);
+    return b;
+  }
+  function move(i, dir){
+    const j = i + dir;
+    if(j<0 || j>=items.length) return;
+    const tmp = items[i]; items[i] = items[j]; items[j] = tmp;
+    renderThumbs();
+  }
+  function remove(i){
+    items.splice(i,1);
+    renderThumbs();
+  }
+  function rotate(i){
+    items[i].rotate = ((items[i].rotate||0) + 90) % 360;
+    renderThumbs();
+  }
 })();
 </script>
 </body>
